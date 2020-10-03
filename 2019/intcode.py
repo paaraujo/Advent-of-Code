@@ -1,141 +1,139 @@
+from collections import defaultdict
+
 class Intcode():
     """Intcode class with TEST method which includes some performance validations and
     CALCULATE which executes the complete intcode algorithm    
 
     Initialized with a list of computer instructions (seq)    
     """
-    def test(self,seqS,input_instruction):
+    def __init__(self):
+        self.relative_base = 0
+        self.result = -1
+        
+    def initialize_memory(self,seq):
+        self.seq = seq
+        self.int_dict = defaultdict(int)
+        for i,v in enumerate(self.seq):
+            self.int_dict[i] = int(v)
+            
+    def reset_memory(self):
+        self.int_dict.clear()
+        self.initialize_memory(self.seq)
+             
+    def set_pointer(self,p):
+        self.pointer = p
+    
+    def test(self,input_instruction):
         """Intcode Test Version
         
         Parameters
         ----------
-        seqS : list[str]
-            A list of strings containing the computer instructions
         input_intruction : list[int]
             A list of integers containing all user input instructions
         
         Returns
         -------
-        Nothing
+        None
         """
-        # initialization
-        seqI = list(map(int,seqS))
-        pointer = 0
-        opcode = seqS[pointer][-2:]
-        while opcode != '99':
-            opint = int(opcode)                               
-            if opint == 1:
+        opcode = self.int_dict[self.pointer] % 100
+        while opcode != 99:
+            p1, p2, p3 = self._eval_mode(opcode,self.int_dict,self.pointer)                          
+            if opcode == 1:
                 # addition
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                seqI[p3]  = p1 + p2
-                seqS[p3] = str(p1 + p2)
-                pointer += 4
-            elif opint == 2:
+                self.int_dict[p3] = p1 + p2
+                self.pointer += 4
+            elif opcode == 2:
                 # multiplication
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                seqI[p3]  = p1 * p2
-                seqS[p3] = str(p1 * p2)
-                pointer += 4
-            elif opint == 3:
-                # takes parameter as input
-                p1,_,_ = self._eval_mode(opint,seqI,seqS,pointer)
-                try:
-                    seqI[p1] = input_instruction.pop(0)
-                    seqS[p1] = str(seqI[p1])
-                    pointer += 2
-                except AttributeError:
-                    print("[ERROR] Check if the input_instruction is a list of integers.")
+                self.int_dict[p3] = p1 * p2
+                self.pointer += 4
+            elif opcode == 3:
+                # takes parameter as input, if statement to manage waiting cases
+                if len(input_instruction):
+                    self.int_dict[p1] = input_instruction.pop(0)
+                    self.pointer += 2
+                else:
                     break
-                except IndexError:
-                    print("[ERROR] Check if the size of the input_instruction is higher than one.")
-                    break
-            elif opint == 4:
+            elif opcode == 4:
                 # output parameter value
-                p1,_,_ = self._eval_mode(opint,seqI,seqS,pointer)
                 print(p1)
-                pointer += 2
+                self.pointer += 2
+            elif opcode == 5:
+                # jump-if-true
+                self.pointer = p2 if p1 != 0 else self.pointer+3
+            elif opcode == 6:
+                # jump-if-false
+                self.pointer = p2 if p1 == 0 else self.pointer+3
+            elif opcode == 7:
+                self.int_dict[p3] = 1 if p1<p2 else 0
+                self.pointer += 4
+            elif opcode == 8:
+                self.int_dict[p3] = 1 if p1==p2 else 0
+                self.pointer += 4
+            elif opcode == 9:
+                self.relative_base += p1
+                self.pointer += 2
             # getting next opcode
-            opcode = seqS[pointer][-2:]
+            opcode = self.int_dict[self.pointer] % 100
            
-    def calculate(self,seqS,input_instruction,p):
+    def calculate(self,input_instruction):
         """Intcode Full Version
         
         Parameters
         ----------
-        seqS : list[str]
-            A list of strings containing the computer instructions
         input_intruction : list[int]
             A list of integers containing all user input instructions
         
         Returns
         -------
-        seqS : list[str]
-            Input list of strings modified
-        p : integer
-            Pointer position
-        output : int
+        result : int
             The final result of the calculations
         """
-        # initialization
-        seqI = list(map(int,seqS))
-        pointer = p
-        output = -1
-        opcode = seqS[pointer][-2:]
-        while opcode != '99':
-            opint = int(opcode)                               
-            if opint == 1:
+        
+        opcode = self.int_dict[self.pointer] % 100
+        while opcode != 99:
+            p1, p2, p3 = self._eval_mode(opcode,self.int_dict,self.pointer)                            
+            if opcode == 1:
                 # addition
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                seqI[p3] = p1 + p2
-                seqS[p3] = str(p1 + p2)
-                pointer += 4
-            elif opint == 2:
+                self.int_dict[p3] = p1 + p2
+                self.pointer += 4
+            elif opcode == 2:
                 # multiplication
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                seqI[p3] = p1 * p2
-                seqS[p3] = str(p1 * p2)
-                pointer += 4
-            elif opint == 3:
-                # takes parameter as input
-                p1,_,_ = self._eval_mode(opint,seqI,seqS,pointer)
-                 # if statement to manage waiting cases
+                self.int_dict[p3] = p1 * p2
+                self.pointer += 4
+            elif opcode == 3:
+                # takes parameter as input, if statement to manage waiting cases
                 if len(input_instruction):
-                    seqI[p1] = input_instruction.pop(0)
-                    seqS[p1] = str(seqI[p1])
-                    pointer += 2
+                    self.int_dict[p1] = input_instruction.pop(0)
+                    self.pointer += 2
                 else:
                     break
-            elif opint == 4:
+            elif opcode == 4:
                 # output parameter value
-                p1,_,_ = self._eval_mode(opint,seqI,seqS,pointer)
-                output = p1
-                pointer += 2
-            elif opint == 5:
+                self.result = p1
+                self.pointer += 2
+            elif opcode == 5:
                 # jump-if-true
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                pointer = p2 if p1 != 0 else pointer+3
-            elif opint == 6:
+                self.pointer = p2 if p1 != 0 else self.pointer+3
+            elif opcode == 6:
                 # jump-if-false
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                pointer = p2 if p1 == 0 else pointer+3
-            elif opint == 7:
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                seqI[p3] = 1 if p1<p2 else 0
-                seqS[p3] = str(seqI[p3])
-                pointer += 4
-            elif opint == 8:
-                p1, p2, p3 = self._eval_mode(opint,seqI,seqS,pointer)
-                seqI[p3] = 1 if p1==p2 else 0
-                seqS[p3] = str(seqI[p3])
-                pointer += 4
+                self.pointer = p2 if p1 == 0 else self.pointer+3
+            elif opcode == 7:
+                self.int_dict[p3] = 1 if p1<p2 else 0
+                self.pointer += 4
+            elif opcode == 8:
+                self.int_dict[p3] = 1 if p1==p2 else 0
+                self.pointer += 4
+            elif opcode == 9:
+                self.relative_base += p1
+                self.pointer += 2
             # getting next opcode
-            opcode = seqS[pointer][-2:]
+            opcode = self.int_dict[self.pointer] % 100
         # cycle is done, set -1 as out trigger
-        if opcode == '99':
-            pointer = -1
-        return seqS,pointer,output
+        if opcode == 99:
+            self.pointer = -1
+        return self.result
     
-    def _eval_mode(self,op,si,ss,p):
+    def _eval_mode(self,op,si,p):
         """Evaluate Instruction Modes
         
         Parameters
@@ -144,8 +142,6 @@ class Intcode():
             Opcode
         si : list[int]
             A list of integers containing the computer instructions
-        ss : list[str]
-            A list of strings containing the computer instructions
         p : int
             Current position of the pointer
         
@@ -158,25 +154,73 @@ class Intcode():
         p3 : int
             The value of the position or the value stored in the position indicated by the third parameter 
         """
-        c  = ss[p][-3:-2] # mode of 1st parameter
-        b  = ss[p][-4:-3] # mode of 2nd parameter
-        a  = ss[p][-5:-4] # mode of 3rd parameter // always zero
+        c  = (si[p] % 1000) // 100
+        b  = (si[p] % 10000) // 1000
+        a  = (si[p] % 100000) // 10000 # always zero
         if op == 3:
-            p1 = p+1 if c == '1' else si[p+1]
+            if c == 0:
+                p1 = si[p+1]
+            elif c == 1:
+                p1 = p+1
+            elif c == 2:
+                p1 = self.relative_base + si[p+1]
             p2 = None
             p3 = None
         elif op == 4:
-            p1 = si[p+1] if c == '1' else si[si[p+1]]
+            if c == 0:
+                p1 = si[si[p+1]]
+            elif c == 1:
+                p1 = si[p+1]
+            elif c == 2:
+                p1 = si[self.relative_base + si[p+1]]
             p2 = None
             p3 = None
         elif op == 5 or op == 6:
-            p1 = si[p+1] if c == '1' else si[si[p+1]]
-            p2 = si[p+2] if b == '1' else si[si[p+2]]
+            if c == 0:
+                p1 = si[si[p+1]]
+            elif c == 1:
+                p1 = si[p+1]
+            elif c == 2:
+                p1 = si[self.relative_base + si[p+1]]
+                
+            if b == 0:
+                p2 = si[si[p+2]]
+            elif b == 1:
+                p2 = si[p+2]
+            elif b == 2:
+                p2 = si[self.relative_base + si[p+2]]
             p3 = None
-        else:   
-            p1 = si[p+1] if c == '1' else si[si[p+1]]
-            p2 = si[p+2] if b == '1' else si[si[p+2]] 
-            p3 = si[si[p+3]] if a == '1' else si[p+3]
+        elif op == 9:
+            if c == 0:
+                p1 = si[si[p+1]]
+            elif c == 1:
+                p1 = si[p+1]
+            elif c == 2:
+                p1 = si[self.relative_base + si[p+1]]
+            p2 = None
+            p3 = None
+        else:
+            if c == 0:
+                p1 = si[si[p+1]]
+            elif c == 1:
+                p1 = si[p+1]
+            elif c == 2:
+                p1 = si[self.relative_base + si[p+1]]
+                
+            if b == 0:
+                p2 = si[si[p+2]]
+            elif b == 1:
+                p2 = si[p+2]
+            elif b == 2:
+                p2 = si[self.relative_base + si[p+2]]
+                
+            if a == 0:
+                p3 = si[p+3]
+            elif a == 1:
+                p3 = si[si[p+3]]
+            elif a == 2:
+                p3 = self.relative_base + si[p+3]
+
         return [p1,p2,p3]
 
 class Amplifier():
@@ -185,44 +229,14 @@ class Amplifier():
     Initialized with a list of computer instructions (seq)    
     """
     def __init__(self,seq):
-        """ Initialization of class
-        Parameters
-        ----------
-        seq : list[str]
-            A list of strings containing the computer instructions
+        self.computer = Intcode()
+        self.computer.initialize_memory(seq)
+        self.computer.set_pointer(0)
         
-        Returns
-        -------
-        None
-        """
-        # position where the intcode should start reading values of the working_list
-        self.pointer = 0 
-        # backup of the initialization list
-        self.original_seq = seq
-        # runtime list of computer instructions
-        self.working_seq  = list(seq)
     def reset(self):
-        """ Reset of both pointer and list of computer instructions
-        Parameters
-        ----------
-        None
+        self.computer.set_pointer(0)
+        self.computer.reset_memory()
         
-        Returns
-        -------
-        None
-        """
-        self.pointer = 0
-        self.working_seq = list(self.original_seq)
     def run(self, input_instruction):
-        """ Reset of both pointer and list of computer instructions
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        Result of the calculations
-        """
-        computer = Intcode()
-        self.working_seq,self.pointer,output = computer.calculate(self.working_seq,input_instruction,self.pointer)
+        output = self.computer.calculate(input_instruction)
         return output

@@ -1,7 +1,7 @@
 from intcode import Intcode
     
 def part1(input_instruction):
-    with open('inputs/day5.txt') as f:
+    with open('inputs/day9.txt') as f:
         seq = f.read().rstrip('\n').split(',')
         computer = Intcode()
         computer.initialize_memory(seq)
@@ -10,7 +10,7 @@ def part1(input_instruction):
 
 def part2(input_instruction):
     output = -1
-    with open('inputs/day5.txt') as f:
+    with open('inputs/day9.txt') as f:
         seq = f.read().rstrip('\n').split(',')
         computer = Intcode()
         computer.initialize_memory(seq)
@@ -19,4 +19,4 @@ def part2(input_instruction):
     return output
 
 part1([1])
-print(part2([5]))
+print(part2([2]))
