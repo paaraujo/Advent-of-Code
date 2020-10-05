@@ -8,7 +8,7 @@ class Intcode():
     """
     def __init__(self):
         self.relative_base = 0
-        self.result = -1
+        self.result = []
         
     def initialize_memory(self,seq):
         self.seq = seq
@@ -35,6 +35,9 @@ class Intcode():
         -------
         None
         """
+        if type(input_instruction) is not list:
+            input_instruction = [input_instruction]
+            
         opcode = self.int_dict[self.pointer] % 100
         while opcode != 99:
             p1, p2, p3 = self._eval_mode(opcode,self.int_dict,self.pointer)                          
@@ -88,6 +91,10 @@ class Intcode():
         result : int
             The final result of the calculations
         """
+        if type(input_instruction) is not list:
+            input_instruction = [input_instruction]
+            
+        self.result.clear()
         
         opcode = self.int_dict[self.pointer] % 100
         while opcode != 99:
@@ -109,7 +116,7 @@ class Intcode():
                     break
             elif opcode == 4:
                 # output parameter value
-                self.result = p1
+                self.result.append(p1)
                 self.pointer += 2
             elif opcode == 5:
                 # jump-if-true
@@ -239,4 +246,4 @@ class Amplifier():
         
     def run(self, input_instruction):
         output = self.computer.calculate(input_instruction)
-        return output
+        return output[-1]

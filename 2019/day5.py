@@ -16,7 +16,7 @@ def part2(input_instruction):
         computer.initialize_memory(seq)
         computer.set_pointer(0)
         output = computer.calculate(input_instruction)
-    return output
+    return output[-1]
 
-part1([1])
-print(part2([5]))
+part1(1)
+print(part2(5))
