@@ -8,6 +8,8 @@ __pycache__/
 
 # Personal Folders
 inputs/
+.idea/
+.DS_Store
 
 # Distribution / packaging
 .Python
