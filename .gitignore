@@ -6,10 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
-# Personal Folders
+# Personal Folders and files
 inputs/
 .idea/
 .DS_Store
+x64/
+x86/
+.vs/
 
 # Distribution / packaging
 .Python
