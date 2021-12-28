@@ -22,9 +22,12 @@
     <ClCompile Include="day1.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="day2.cpp" />
+    <ClCompile Include="day3.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="days.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

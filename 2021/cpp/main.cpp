@@ -15,4 +15,5 @@ int main()
     // Calling days
     day1::run(folder_path);
     day2::run(folder_path);
+    day3::run(folder_path);
 }
